@@ -1,20 +1,32 @@
 
 <div id="shop" dir="rtl">
   <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      overflow-x: hidden;
+    }
+
     #shop {
       font-family: Arial, sans-serif;
       color: #243044;
       width: 100%;
       max-width: 1100px;
       margin: 0 auto;
-      padding: clamp(4px, 1.5cqw, 16px);
+      padding: 8px;
       box-sizing: border-box;
       text-align: center;
       container-type: inline-size;
       font-size: clamp(12px, 1.5cqw, 16px);
     }
 
-    #shop * {
+    #shop *,
+    #shop *::before,
+    #shop *::after {
       box-sizing: border-box;
     }
 
@@ -50,14 +62,14 @@
     #shop h2 {
       font-size: clamp(17px, 2.4cqw, 25px);
       line-height: 1.4;
-      margin: clamp(8px, 1.5cqw, 14px) 0 clamp(12px, 2cqw, 20px);
+      margin: 12px 0 16px;
       text-align: center;
     }
 
     #shop h3 {
       font-size: clamp(12px, 1.8cqw, 18px);
       line-height: 1.5;
-      margin: clamp(6px, 1cqw, 12px) 0;
+      margin: 8px 0;
       text-align: center;
       overflow-wrap: anywhere;
     }
@@ -72,8 +84,8 @@
 
     #shop button {
       border: 0;
-      border-radius: clamp(6px, 1cqw, 10px);
-      padding: clamp(7px, 1.2cqw, 12px);
+      border-radius: 8px;
+      padding: 9px;
       cursor: pointer;
       font-family: inherit;
       font-size: clamp(11px, 1.5cqw, 15px);
@@ -99,7 +111,7 @@
     }
 
     #shop .cart {
-      margin-top: clamp(12px, 2.5cqw, 26px);
+      margin-top: 20px;
     }
 
     #shop .cart-row {
@@ -149,7 +161,7 @@
 
     #shop #whatsappLink {
       display: block;
-      padding: clamp(10px, 1.5cqw, 15px);
+      padding: 12px;
       background: #176b4d;
       color: white;
       text-align: center;
@@ -164,7 +176,7 @@
       line-height: 1.6;
     }
 
-    /* الإطار الضيق: بوكسات أصغر ومسافات أقل */
+    /* عرض الموبايل والإطارات الضيقة */
     @container (max-width: 420px) {
       #shop .products {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -175,7 +187,7 @@
       }
 
       #shop .product {
-        padding: clamp(5px, 1.5cqw, 9px);
+        padding: 7px;
       }
 
       #shop .cart-row {
@@ -286,10 +298,13 @@
               <small>${money(p.price)} × ${qty}</small>
             </div>
             <div class="qty">
-              <button data-change="${id}" data-delta="1" aria-label="زيادة الكمية">+</button>
+              <button data-change="${id}" data-delta="1"
+                aria-label="زيادة الكمية">+</button>
               <span>${qty}</span>
-              <button data-change="${id}" data-delta="-1" aria-label="تقليل الكمية">−</button>
-              <button class="remove" data-remove="${id}" aria-label="حذف المنتج">×</button>
+              <button data-change="${id}" data-delta="-1"
+                aria-label="تقليل الكمية">−</button>
+              <button class="remove" data-remove="${id}"
+                aria-label="حذف المنتج">×</button>
             </div>
           </div>
         `;
@@ -375,6 +390,7 @@
     link.href = url;
     link.textContent = "اضغط هنا لفتح واتساب وإرسال الطلب";
     scheduleHeightUpdate();
+
     window.open(url, "_blank", "noopener");
   });
 
@@ -382,22 +398,27 @@
   let heightScheduled = false;
 
   function updateHeight() {
-    const height = Math.ceil(shopEl.getBoundingClientRect().height);
+    heightScheduled = false;
+
+    const height = Math.ceil(
+      shopEl.getBoundingClientRect().height
+    );
+
     if (height === lastHeight) return;
     lastHeight = height;
 
     window.parent.postMessage({
       type: "shop-height",
-      height
+      height: height
     }, "*");
   }
 
   function scheduleHeightUpdate() {
     if (heightScheduled) return;
+
     heightScheduled = true;
 
     requestAnimationFrame(() => {
-      heightScheduled = false;
       updateHeight();
     });
   }
@@ -406,6 +427,11 @@
     const observer = new ResizeObserver(scheduleHeightUpdate);
     observer.observe(shopEl);
   }
+
+  shopEl.querySelectorAll("img").forEach(img => {
+    img.addEventListener("load", scheduleHeightUpdate);
+    img.addEventListener("error", scheduleHeightUpdate);
+  });
 
   window.addEventListener("load", scheduleHeightUpdate);
   window.addEventListener("resize", scheduleHeightUpdate);
